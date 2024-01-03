@@ -16,16 +16,28 @@ public class Customer {
     private String emailAddress = "";
     private byte[] passwordHash = null;
 
+
+    public double getSalary() {
+        return salary;
+    }
+
+    public void setSalary(double salary) {
+        this.salary = salary;
+    }
+
+    private double salary = 0;
+
     public final static byte[] salt = HexFormat.of().parseHex("e04fd020ea3a6910a2d808002b30309d");
 
 
-    public Customer(String id, String name, String emailAddress, String password, String phoneNumber, String customerBornDay, String address){
+    public Customer(String id, String name, String emailAddress, String password, String phoneNumber, String customerBornDay, String address, double salary){
         this.id = id;
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.name = name;
         this.birthDate = customerBornDay;
         this.emailAddress = emailAddress;
+        this.salary = salary;
         this.passwordHash = getHash(password);
     }
 

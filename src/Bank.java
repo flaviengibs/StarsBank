@@ -7,10 +7,12 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.time.LocalDate;
 import java.util.*;
+import java.time.MonthDay;
 
 public class Bank {
     Map<String, Account> accounts;
     Map<String, Customer> customers;
+
     public Bank() {
 
         this.accounts = new HashMap<>();
@@ -26,15 +28,15 @@ public class Bank {
         System.out.println("Please provide customer name:");
         String name = input.nextLine();
         Customer theCust = null;
-        for(String custId: customers.keySet()) {
+        for (String custId : customers.keySet()) {
             Customer c = customers.get(custId);
-            if(c.getName().equals(name)) {
+            if (c.getName().equals(name)) {
                 theCust = c;
                 break;
             }
         }
 
-        if(theCust == null) {
+        if (theCust == null) {
             System.out.println("There is no customer with that name !!");
             return;
         }
@@ -63,28 +65,30 @@ public class Bank {
             System.out.println("There is an account owned by " + account.getCustomerId() + " on " + account.getOpenedOn() + " with the RIB " + account.getRIB());
         }
     }
-    public void printAccountMoney(){
+
+    public void printAccountMoney() {
         for (Account account : accounts.values()) {
-            System.out.println("There is " + String.format("%.2f", account.getBalance()) + "€ on " + account.getCustomerId() +" account." + "(RIB = " + account.getRIB() + ")");
+            System.out.println("There is " + String.format("%.2f", account.getBalance()) + "€ on " + account.getCustomerId() + " account." + "(RIB = " + account.getRIB() + ")");
 
         }
     }
-    public void addMoneyToAccount(){
+
+    public void addMoneyToAccount() {
         Scanner input = new Scanner(System.in);
         Account theAccount = null;
 
-        while(true) {
+        while (true) {
             System.out.println("Which account do you want to credit ? Put the RIB of this account here :");
             String whichAccount = input.nextLine();
 
             for (String rib : accounts.keySet()) {
-                if(rib.equals(whichAccount)){
+                if (rib.equals(whichAccount)) {
                     theAccount = accounts.get(rib);
                     break;
                 }
             }
 
-            if(theAccount != null) {
+            if (theAccount != null) {
                 break;
             }
 
@@ -96,7 +100,8 @@ public class Bank {
         double appendMoney = input.nextDouble();
         theAccount.addMoney(appendMoney);
     }
-    public void getAccountByJSON(){
+
+    public void getAccountByJSON() {
         final GsonBuilder builder = new GsonBuilder();
         final Gson gson = builder.create();
         final String json = gson.toJson(accounts.get(0));
@@ -109,7 +114,8 @@ public class Bank {
         printAccounts();
 
     }
-    public void createJsonFile(){
+
+    public void createJsonFile() {
         final GsonBuilder builder = new GsonBuilder();
         final Gson gson = builder.create();
 
@@ -119,24 +125,24 @@ public class Bank {
             jsonWriter.beginObject();
             jsonWriter.name("Customers");
             jsonWriter.beginArray();
-            for(Customer c: customers.values()) {
+            for (Customer c : customers.values()) {
                 gson.toJson(c, Customer.class, jsonWriter);
             }
             jsonWriter.endArray();
             jsonWriter.name("Accounts");
             jsonWriter.beginArray();
-            for(Account a: accounts.values()) {
+            for (Account a : accounts.values()) {
                 gson.toJson(a, Account.class, jsonWriter);
             }
             jsonWriter.endArray();
             jsonWriter.endObject();
             fileWriter.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
-    public void readJsonFile(){
+
+    public void readJsonFile() {
         final GsonBuilder builder = new GsonBuilder();
         final Gson gson = builder.create();
 
@@ -146,7 +152,7 @@ public class Bank {
             jsonReader.beginObject();
             while (jsonReader.hasNext()) {
                 String name = jsonReader.nextName();
-                if(name.equals("Customers")) {
+                if (name.equals("Customers")) {
                     jsonReader.beginArray();
                     while (jsonReader.hasNext()) {
                         Customer c = gson.fromJson(jsonReader, Customer.class);
@@ -166,16 +172,15 @@ public class Bank {
             jsonReader.endObject();
             fileReader.close();
 
-        }
-        catch (java.io.IOException io){
+        } catch (java.io.IOException io) {
             System.out.println(io.getMessage());
-        }
-        catch (IllegalStateException e) {
-            System.out.println("ISE: "+ e.getMessage());
+        } catch (IllegalStateException e) {
+            System.out.println("ISE: " + e.getMessage());
         }
 
     }
-    public void createCustomer(){
+
+    public void createCustomer() {
         String customerId;
         String phoneNumber;
         String customerName;
@@ -183,6 +188,7 @@ public class Bank {
         String address;
         String emailAddress;
         String password;
+        double salary;
 
         Scanner input = new Scanner(System.in);
         System.out.println("Welcome to the FlavBank client creation service! Let's start the procedure. ");
@@ -202,20 +208,28 @@ public class Bank {
         System.out.println("Enter your address. If you don't have an address, please enter : no_address .");
         address = input.nextLine();
 
+        System.out.println("Please enter the exact amount of your salary. " +
+                "It will be returned to all of you. Be careful, " +
+                "if you enter a false amount of salary (verified every month), " +
+                "you risk 27 years in prison and a fine of €300,000.");
+        salary = input.nextDouble();
+
+        input.nextLine();
+
         System.out.println("Define a password");
         password = input.nextLine();
 
         customerId = UUID.randomUUID().toString();
 
-        if (address.equals("no_address") & emailAddress.equals("no_email") & phoneNumber.equals("no_phone")){
+        if (address.equals("no_address") & emailAddress.equals("no_email") & phoneNumber.equals("no_phone")) {
             customerId = null;
         }
 
-        Customer c = new Customer(customerId, customerName, emailAddress, password, phoneNumber, customerBirthDate, address);
+        Customer c = new Customer(customerId, customerName, emailAddress, password, phoneNumber, customerBirthDate, address, salary);
         customers.put(c.getId(), c);
     }
 
-    public void ShowMainMenu(){
+    public void ShowMainMenu() {
         System.out.println("Welcome to FlavBank, please choose an action:");
         System.out.println("1. Create new customer");
         System.out.println("2. Create new account");
@@ -235,7 +249,8 @@ public class Bank {
             System.out.println("Customer id: " + c.getId() + ", Customer name: " + c.getName());
         }
     }
-    public void transaction(){
+
+    public void transaction() {
         Scanner input = new Scanner(System.in);
         System.out.println("Enter your RIB");
         String sourceRib = input.nextLine();
@@ -245,11 +260,10 @@ public class Bank {
         String destRib = input.nextLine();
         System.out.println("How much money do you want to credit to the account with the RIB " + destRib);
         double amount = input.nextDouble();
-        if (accounts.get(sourceRib).getBalance() < amount ) {
+        if (accounts.get(sourceRib).getBalance() < amount) {
             System.out.println("You don't have enough money. The transaction will be delete.");
             amount = 0;
-        }
-        else{
+        } else {
             Account sourceAccount = accounts.get(sourceRib);
             sourceAccount.removeMoney(amount);
             Account destAccount = accounts.get(destRib);
@@ -260,6 +274,7 @@ public class Bank {
     boolean logged = false;
     String loggedInCust = "";
     boolean loggedAsAdmin = false;
+
     public void login() {
         Scanner input = new Scanner(System.in);
         System.out.println("To login as customer, please enter your name");
@@ -267,21 +282,21 @@ public class Bank {
         System.out.println("Now please enter your password");
         String providedPwd = input.nextLine();
         Customer theCust = null;
-        for(String custId: customers.keySet()) {
+        for (String custId : customers.keySet()) {
             Customer c = customers.get(custId);
-            if(c.getName().equals(nameLoginCustomer)) {
+            if (c.getName().equals(nameLoginCustomer)) {
                 theCust = c;
                 break;
             }
         }
 
-        if(theCust == null) {
+        if (theCust == null) {
             System.out.println("There is no customer with that name !!");
             return;
         }
 
         byte[] pwdHash = Customer.getHash(providedPwd);
-        if(Arrays.equals(pwdHash, theCust.getPasswordHash())){
+        if (Arrays.equals(pwdHash, theCust.getPasswordHash())) {
             boolean login = true;
             loggedInCust = theCust.getId();
             System.out.println("Logged successfully !");
@@ -294,23 +309,23 @@ public class Bank {
         System.out.println("Please enter the admins password");
         String providedPwd = input.nextLine();
         byte[] pwdHash = Admin.getHash(providedPwd);
-        if(Arrays.equals(pwdHash, admin.getPwdHash())){
+        if (Arrays.equals(pwdHash, admin.getPwdHash())) {
             boolean loggedAsAdmin = true;
             System.out.println("You are login as admin !");
         }
     }
 
-    public void PayBankServices(){
-        for (Account acc: accounts.values()) {
+    public void PayBankServices() {
+        for (Account acc : accounts.values()) {
             String openDate = acc.getOpenedOn();
 
         }
-        for (Account a:accounts.values()) {
+        for (Account a : accounts.values()) {
             a.removeMoney(70);
         }
     }
 
-    public void suspendAccount(){
+    public void suspendAccount() {
         Scanner input = new Scanner(System.in);
         System.out.println("Enter the RIB of the account that you want to suspend : ");
         String nameAccountToSuspend = input.nextLine();
@@ -318,22 +333,31 @@ public class Bank {
         accountToSuspend.setStatus(Account.Status.Suspended);
     }
 
-    public void closeAccount(){
+    public void closeAccount() {
         Scanner input = new Scanner(System.in);
         System.out.println("Enter the RIB of the account that you want to close : ");
         String ribAccountToClose = input.nextLine();
         Account accountToClose = accounts.get(ribAccountToClose);
         accountToClose.setStatus(Account.Status.Closed);
-        if (accountToClose.getMoney() == 0){
+        if (accountToClose.getMoney() == 0) {
             accountToClose.setRIB(null);
             accountToClose.setCustomerId(null);
-        }
-        else {
+        } else {
             accountToClose.setRIB(null);
             accountToClose.setMoney(0);
             accountToClose.setCustomerId(null);
         }
     }
-}
 
+    public void paySalary() {
+        if (MonthDay.now().getDayOfMonth() == 25) {
+            for (Customer cust : customers.values()) {
+                String accountsId = cust.getId();
+                Account theAccounts = accounts.get(accountsId);
+                double moneyOfAccount = theAccounts.getMoney();
+                theAccounts.addMoney(cust.getSalary());
+            }
+        }
+    }
+}
 
