@@ -5,14 +5,16 @@ public class Account {
     private String customerId;
     private String RIB;
     public enum Status {
-        Active, InCreation, Suspended,Closed
+        Active, InCreation, Suspended, Closed
     }
 
-    public Status getStatus() {
-        return status;
+    public Status getStatus() { return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(Status status) throws AccountInvalidStatusChangeException {
+        if(this.status == Status.Closed)
+            throw new AccountInvalidStatusChangeException("You cannot change the status of a closed account");
+
         this.status = status;
     }
 

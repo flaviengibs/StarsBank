@@ -9,7 +9,8 @@ public class Main {
         b.readJsonFile();
         b.printAccounts();
         boolean exit = false;
-
+        System.out.println(b.accounts.toString());
+        System.out.println(b.customers.toString());
         while(!exit) {
             b.ShowMainMenu();
             Scanner input = new Scanner(System.in);
@@ -36,12 +37,18 @@ public class Main {
                     b.loginAsAdmin();
                     break;
                 case 8:
-                    b.suspendAccount();
+                    b.defineRibAccountToPay();
                     break;
                 case 9:
-                    b.closeAccount();
+                    b.suspendAccount();
                     break;
                 case 10:
+                    b.closeAccount();
+                    break;
+                case 11:
+                    b.unsuspendAccount();
+                    break;
+                case 12:
                     exit = true;
             }
         }

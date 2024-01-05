@@ -15,22 +15,14 @@ public class Customer {
     private String address = "";
     private String emailAddress = "";
     private byte[] passwordHash = null;
-
+    private double salary = 0;
+    private String ribOfAccountToCreditBySalary;
 
     public double getSalary() {
         return salary;
     }
-
-    public void setSalary(double salary) {
-        this.salary = salary;
-    }
-
-    private double salary = 0;
-
     public final static byte[] salt = HexFormat.of().parseHex("e04fd020ea3a6910a2d808002b30309d");
-
-
-    public Customer(String id, String name, String emailAddress, String password, String phoneNumber, String customerBornDay, String address, double salary){
+    public Customer(String id, String name, String emailAddress, String password, String phoneNumber, String customerBornDay, String address, String ribOfAccountToCreditBySalary, double salary){
         this.id = id;
         this.address = address;
         this.phoneNumber = phoneNumber;
@@ -39,6 +31,7 @@ public class Customer {
         this.emailAddress = emailAddress;
         this.salary = salary;
         this.passwordHash = getHash(password);
+        this.ribOfAccountToCreditBySalary = ribOfAccountToCreditBySalary;
     }
 
     public static byte @Nullable [] getHash(@NotNull String pass) {
@@ -60,53 +53,26 @@ public class Customer {
     public String getName() {
         return name;
     }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getBirthDate() {
         return birthDate;
     }
-
-    public void setBirthDate(String birthDate) {
-        this.birthDate = birthDate;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
     public String getAddress() {
         return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
     }
     public byte[] getPasswordHash() {
         return passwordHash;
     }
 
+    public String getRibOfAccountToCreditBySalary() {
+        return ribOfAccountToCreditBySalary;
+    }
+
+    public void setRibOfAccountToCreditBySalary(String ribOfAccountToCreditBySalary) {
+        this.ribOfAccountToCreditBySalary = ribOfAccountToCreditBySalary;
+    }
 }
 

@@ -5,13 +5,11 @@ import com.google.gson.stream.JsonReader;
 import java.io.IOException;
 import java.io.FileWriter;
 import java.io.FileReader;
-import java.time.LocalDate;
 import java.util.*;
-import java.time.MonthDay;
 
 public class Bank {
-    Map<String, Account> accounts;
-    Map<String, Customer> customers;
+    public Map<String, Account> accounts;
+    public Map<String, Customer> customers;
 
     public Bank() {
 
@@ -188,11 +186,12 @@ public class Bank {
         String address;
         String emailAddress;
         String password;
+        String ribOfAccountToCreditBySalary;
         double salary;
 
         Scanner input = new Scanner(System.in);
         System.out.println("Welcome to the FlavBank client creation service! Let's start the procedure. ");
-        System.out.println("Enter your name :");
+        System.out.println("Enter your name (example : Firstname FAMILY-NAME) : ");
         customerName = input.nextLine();
 
         System.out.println("Enter a phone number. If you don't have a phone, please enter : no_phone. ");
@@ -209,10 +208,14 @@ public class Bank {
         address = input.nextLine();
 
         System.out.println("Please enter the exact amount of your salary. " +
-                "It will be returned to all of you. Be careful, " +
-                "if you enter a false amount of salary (verified every month), " +
+                "It will be credited to your account each month. " + "\n" +
+                "Be careful if you enter a false salary (verified every month), " +
                 "you risk 27 years in prison and a fine of €300,000.");
         salary = input.nextDouble();
+
+        System.out.println("Please enter the RIB of the account into which you want your salary to be paid. ");
+        System.out.println("If you do not have an account yet, please enter rib 0000, you can change it later : ");
+        ribOfAccountToCreditBySalary = input.nextLine();
 
         input.nextLine();
 
@@ -225,10 +228,11 @@ public class Bank {
             customerId = null;
         }
 
-        Customer c = new Customer(customerId, customerName, emailAddress, password, phoneNumber, customerBirthDate, address, salary);
+        Customer c = new Customer(customerId, customerName, emailAddress, password, phoneNumber, customerBirthDate, address, ribOfAccountToCreditBySalary, salary);
         customers.put(c.getId(), c);
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     public void ShowMainMenu() {
         System.out.println("Welcome to FlavBank, please choose an action:");
         System.out.println("1. Create new customer");
@@ -238,9 +242,11 @@ public class Bank {
         System.out.println("5. List Accounts");
         System.out.println("6. List Customers");
         System.out.println("7. Login as admin");
-        System.out.println("8. Suspend an account (Admin)");
-        System.out.println("9. Delete an account  (Admin)");
-        System.out.println("10. Quit");
+        System.out.println("8. Change the RIB of the account who will receive your salary");
+        System.out.println("9. Suspend an account      (Admin)");
+        System.out.println("10. Delete an account      (Admin)");
+        System.out.println("11. Unsuspend an account   (Admin)");
+        System.out.println("12. Quit");
     }
 
     public void printCustomers() {
@@ -269,6 +275,31 @@ public class Bank {
             Account destAccount = accounts.get(destRib);
             destAccount.addMoney(amount);
         }
+    }
+
+    public void defineRibAccountToPay() {
+        Scanner input = new Scanner(System.in);
+        System.out.println("Please provide customer name:");
+        String name = input.nextLine();
+        Customer theCust = null;
+        for (String custId : customers.keySet()) {
+            Customer c = customers.get(custId);
+            if (c.getName().equals(name)) {
+                theCust = c;
+                break;
+            }
+        }
+
+        if (theCust == null) {
+            System.out.println("There is no customer with that name !!");
+            return;
+        }
+
+        System.out.println("Please enter the RIB of the account into which you want your salary to be paid : ");
+        String ribAccountToPay = input.nextLine();
+        theCust.setRibOfAccountToCreditBySalary(ribAccountToPay);
+
+
     }
 
     boolean logged = false;
@@ -330,7 +361,11 @@ public class Bank {
         System.out.println("Enter the RIB of the account that you want to suspend : ");
         String nameAccountToSuspend = input.nextLine();
         Account accountToSuspend = accounts.get(nameAccountToSuspend);
-        accountToSuspend.setStatus(Account.Status.Suspended);
+        try {
+            accountToSuspend.setStatus(Account.Status.Suspended);
+        } catch (AccountInvalidStatusChangeException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     public void closeAccount() {
@@ -338,7 +373,11 @@ public class Bank {
         System.out.println("Enter the RIB of the account that you want to close : ");
         String ribAccountToClose = input.nextLine();
         Account accountToClose = accounts.get(ribAccountToClose);
-        accountToClose.setStatus(Account.Status.Closed);
+        try {
+            accountToClose.setStatus(Account.Status.Closed);
+        } catch (AccountInvalidStatusChangeException e){
+            System.err.println(e.getMessage());
+        }
         if (accountToClose.getMoney() == 0) {
             accountToClose.setRIB(null);
             accountToClose.setCustomerId(null);
@@ -349,15 +388,18 @@ public class Bank {
         }
     }
 
-    public void paySalary() {
-        if (MonthDay.now().getDayOfMonth() == 25) {
-            for (Customer cust : customers.values()) {
-                String accountsId = cust.getId();
-                Account theAccounts = accounts.get(accountsId);
-                double moneyOfAccount = theAccounts.getMoney();
-                theAccounts.addMoney(cust.getSalary());
-            }
+    @SuppressWarnings("SpellCheckingInspection")
+    public void unsuspendAccount(){
+        Scanner input = new Scanner(System.in);
+        System.out.println("Enter the RIB of the account that you want to reactive : ");
+        String ribAccountToReactive = input.nextLine();
+        Account accountToReactive = accounts.get(ribAccountToReactive);
+        try{
+            accountToReactive.setStatus(Account.Status.Active);
+        } catch (AccountInvalidStatusChangeException e){
+            System.err.println(e.getMessage());
         }
+
     }
 }
 
