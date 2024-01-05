@@ -190,7 +190,7 @@ public class Bank {
         double salary;
 
         Scanner input = new Scanner(System.in);
-        System.out.println("Welcome to the FlavBank client creation service! Let's start the procedure. ");
+        System.out.println("Welcome to the StarsBank client creation service! Let's start the procedure. ");
         System.out.println("Enter your name (example : Firstname FAMILY-NAME) : ");
         customerName = input.nextLine();
 
@@ -234,7 +234,7 @@ public class Bank {
 
     @SuppressWarnings("SpellCheckingInspection")
     public void ShowMainMenu() {
-        System.out.println("Welcome to FlavBank, please choose an action:");
+        System.out.println("Welcome to StarsBank, please choose an action:");
         System.out.println("1. Create new customer");
         System.out.println("2. Create new account");
         System.out.println("3. Do a transaction with another client");
