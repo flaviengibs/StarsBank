@@ -77,4 +77,4 @@ Keep that file alongside the JAR to preserve your data between sessions.
 
 The hardcoded admin password is `TheAdminPassword`.  
 Change it in `Admin.java` before deploying.
->>>>>>> ae225fa (Add Maven build, fat JAR, and README)
+
