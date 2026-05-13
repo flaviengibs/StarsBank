@@ -346,16 +346,6 @@ public class Bank {
         }
     }
 
-    public void PayBankServices() {
-        for (Account acc : accounts.values()) {
-            String openDate = acc.getOpenedOn();
-
-        }
-        for (Account a : accounts.values()) {
-            a.removeMoney(70);
-        }
-    }
-
     public void suspendAccount() {
         Scanner input = new Scanner(System.in);
         System.out.println("Enter the RIB of the account that you want to suspend : ");
