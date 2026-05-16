@@ -6,6 +6,7 @@ public class Main {
 
     public static void main(String[] args) {
         Bank b = new Bank();
+        b.setupScheduledTask();
         b.readJsonFile();
         b.printAccounts();
         boolean exit = false;

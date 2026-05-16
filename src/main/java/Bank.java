@@ -391,5 +391,119 @@ public class Bank {
         }
 
     }
+
+    /**
+     * Registers a daily scheduled task (Windows Task Scheduler or cron on Unix)
+     * that runs ScheduledSalary every day at 08:00, from the current working directory
+     * so that save.json is resolved correctly.
+     * On Windows this requires administrator privileges.
+     */
+    public void setupScheduledTask() {
+        // Resolve the JAR that is currently running
+        String jarPath;
+        try {
+            jarPath = new java.io.File(
+                    Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()
+            ).getAbsolutePath();
+        } catch (java.net.URISyntaxException e) {
+            System.out.println("[Scheduler] Could not determine JAR path: " + e.getMessage());
+            return;
+        }
+
+        // Working directory = wherever the JAR lives (so save.json stays next to it)
+        String workDir = new java.io.File(jarPath).getParent();
+        String javaExe  = ProcessHandle.current().info().command().orElse("java");
+        String os = System.getProperty("os.name", "").toLowerCase();
+
+        if (os.contains("win")) {
+            setupWindowsTask(javaExe, jarPath, workDir);
+        } else {
+            setupCronJob(javaExe, jarPath, workDir);
+        }
+    }
+
+    private void setupWindowsTask(String javaExe, String jarPath, String workDir) {
+        final String TASK_NAME = "StarsBankSalary";
+
+        // Check if the task already exists
+        try {
+            Process check = new ProcessBuilder("schtasks", "/Query", "/TN", TASK_NAME)
+                    .redirectErrorStream(true)
+                    .start();
+            check.waitFor();
+            if (check.exitValue() == 0) {
+                System.out.println("[Scheduler] Salary task already registered.");
+                return;
+            }
+        } catch (Exception e) {
+            // schtasks not available — skip silently
+            return;
+        }
+
+        // Build the command that the task will run
+        // We wrap it in cmd /c so the working directory is honoured
+        String action = String.format("cmd /c \"cd /d \"%s\" && \"%s\" -cp \"%s\" ScheduledSalary\"",
+                workDir, javaExe, jarPath);
+
+        try {
+            Process create = new ProcessBuilder(
+                    "schtasks", "/Create",
+                    "/TN", TASK_NAME,
+                    "/TR", action,
+                    "/SC", "DAILY",
+                    "/ST", "08:00",
+                    "/F"          // overwrite if somehow it exists
+            ).redirectErrorStream(true).start();
+
+            String output = new String(create.getInputStream().readAllBytes());
+            create.waitFor();
+
+            if (create.exitValue() == 0) {
+                System.out.println("[Scheduler] Daily salary task registered successfully (runs at 08:00).");
+            } else {
+                System.out.println("[Scheduler] Could not register task (run as Administrator to enable automatic salary payments).");
+                System.out.println("[Scheduler] " + output.trim());
+            }
+        } catch (Exception e) {
+            System.out.println("[Scheduler] Failed to create scheduled task: " + e.getMessage());
+        }
+    }
+
+    private void setupCronJob(String javaExe, String jarPath, String workDir) {
+        final String MARKER = "# StarsBank salary";
+        String cronLine = String.format("0 8 * * * cd \"%s\" && \"%s\" -cp \"%s\" ScheduledSalary %s",
+                workDir, javaExe, jarPath, MARKER);
+
+        try {
+            // Read existing crontab
+            Process read = new ProcessBuilder("crontab", "-l")
+                    .redirectErrorStream(true)
+                    .start();
+            String existing = new String(read.getInputStream().readAllBytes());
+            read.waitFor();
+
+            if (existing.contains(MARKER)) {
+                System.out.println("[Scheduler] Salary cron job already registered.");
+                return;
+            }
+
+            // Append our line and write back
+            String updated = existing + "\n" + cronLine + "\n";
+            Process write = new ProcessBuilder("crontab", "-")
+                    .redirectErrorStream(true)
+                    .start();
+            write.getOutputStream().write(updated.getBytes());
+            write.getOutputStream().close();
+            write.waitFor();
+
+            if (write.exitValue() == 0) {
+                System.out.println("[Scheduler] Daily salary cron job registered (runs at 08:00).");
+            } else {
+                System.out.println("[Scheduler] Could not register cron job.");
+            }
+        } catch (Exception e) {
+            System.out.println("[Scheduler] Failed to create cron job: " + e.getMessage());
+        }
+    }
 }
 
